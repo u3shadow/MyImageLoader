@@ -55,7 +55,7 @@ import kotlin.math.roundToInt
     }
 
 
-    fun getCompressBitmap(input: InputStream, imageView: ImageView): Bitmap {
+    fun getCompressBitmap(input: InputStream, imageView: ImageView): Bitmap? {
         val stream = ByteArrayOutputStream()
         val bufferSize = 1024
         try {
@@ -78,6 +78,7 @@ import kotlin.math.roundToInt
 
         options.inSampleSize = getInSampleSize(options, imageView)
         options.inJustDecodeBounds = false
-        return BitmapFactory.decodeStream(bitmapInputStream, null, options)!!
+        return BitmapFactory.decodeStream(bitmapInputStream, null, options)
+
     }
 }

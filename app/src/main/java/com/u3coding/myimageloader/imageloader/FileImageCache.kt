@@ -6,9 +6,10 @@ import android.graphics.BitmapFactory
 import java.io.*
 
 
-class FileImageCache(private val context: Context):ImageCache {
+class FileImageCache(private val context: Context): ImageCache {
 
-   override fun cacheImg(bitmap: Bitmap,name:String) {
+   override fun cacheImg(bitmap: Bitmap?,name:String) {
+       if (bitmap != null)
         try {
             val file = File(context.cacheDir, name)
             val out = FileOutputStream(file)
