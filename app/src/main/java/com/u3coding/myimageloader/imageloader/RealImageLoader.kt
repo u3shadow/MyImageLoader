@@ -34,14 +34,21 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams) {
                     bitmap = getNetImg(imageView)
                 }
                 if (bitmap != null)
-                bitmap = roundBitmap(bitmap)
+                    bitmap = roundBitmap(bitmap)
             } catch (e: IOException) {
                 e.printStackTrace()
                 Log.e("NetImageView", "Load image error")
             }
             withContext(Dispatchers.Main) {
                 if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap)
+                   imageView.setImageBitmap(bitmap)
+/*                          val placeholder = BitmapFactory.decodeResource(
+                              params.context?.resources,
+                              params.placeHolder
+                          )
+                          val drawable = MyAnimationDrawable(bitmap!!, placeholder!!)
+                          imageView.setImageDrawable(drawable)
+                          drawable.start()*/
                 }
             }
         }
@@ -74,8 +81,8 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams) {
         if (code == 200) {
             val inputStream = connection.inputStream
             bitmap = bitmapCompressor.getCompressBitmap(inputStream, imageView)
-            if(bitmap != null)
-            bitmap = changeScale(bitmap)
+            if (bitmap != null)
+                bitmap = changeScale(bitmap)
             if (params.useCache)
                 fileCache.cacheImg(bitmap, getCacheFileName())
             inputStream.close()
@@ -95,23 +102,25 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams) {
         return name
     }
 
-    private fun changeScale(bitmap: Bitmap):Bitmap{
+    private fun changeScale(bitmap: Bitmap): Bitmap {
         var mBitmap = bitmap
-        if (params.imageMaxSideSize > 0){
+        if (params.imageMaxSideSize > 0) {
             var height = bitmap.height
             var width = bitmap.width
-            if(width >= height){
+            if (width >= height) {
                 width = params.imageMaxSideSize.toInt()
-                height = (params.imageMaxSideSize*(bitmap.height.toFloat()/bitmap.width)).toInt()
-            }else{
+                height =
+                    (params.imageMaxSideSize * (bitmap.height.toFloat() / bitmap.width)).toInt()
+            } else {
                 height = params.imageMaxSideSize.toInt()
-                width = (params.imageMaxSideSize*(bitmap.width.toFloat()/bitmap.height)).toInt()
+                width = (params.imageMaxSideSize * (bitmap.width.toFloat() / bitmap.height)).toInt()
             }
-          mBitmap = zoomImg(bitmap,width,height)
+            mBitmap = zoomImg(bitmap, width, height)
         }
         return mBitmap
     }
-    private fun zoomImg(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap{
+
+    private fun zoomImg(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
         val width = bm.width
         val height = bm.height
         val scaleWidth = newWidth.toFloat() / width
