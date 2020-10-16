@@ -4,6 +4,6 @@ import android.content.Context
 
 object ImageLoader{
     fun withContext(context: Context): RequestBuilder {
-        return RequestBuilder().withContext(context)
+        return RequestBuilder.withContext(context)
     }
 }

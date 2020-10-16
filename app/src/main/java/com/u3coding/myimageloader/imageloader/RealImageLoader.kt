@@ -14,7 +14,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 
-class RealImageLoader(private val params: RequestBuilder.ImageParams) {
+class RealImageLoader(private val params: RequestBuilder.ImageParams,private val memoryCache:ImageCache) {
     private var fileCache = FileImageCache(params.context!!)
     private var bitmapCompressor = BitmapCompressor(params.context!!)
 
@@ -28,6 +28,8 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 if (params.useCache) {
+                    bitmap = memoryCache.getCacheImage(getCacheFileName())
+                    if (bitmap == null)
                     bitmap = fileCache.getCacheImage(getCacheFileName())
                 }
                 if (bitmap == null) {
@@ -42,13 +44,7 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams) {
             withContext(Dispatchers.Main) {
                 if (bitmap != null) {
                    imageView.setImageBitmap(bitmap)
-/*                          val placeholder = BitmapFactory.decodeResource(
-                              params.context?.resources,
-                              params.placeHolder
-                          )
-                          val drawable = MyAnimationDrawable(bitmap!!, placeholder!!)
-                          imageView.setImageDrawable(drawable)
-                          drawable.start()*/
+                   memoryCache.cacheImg(bitmap,getCacheFileName())
                 }
             }
         }
@@ -81,10 +77,13 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams) {
         if (code == 200) {
             val inputStream = connection.inputStream
             bitmap = bitmapCompressor.getCompressBitmap(inputStream, imageView)
-            if (bitmap != null)
+            if (bitmap != null) {
                 bitmap = changeScale(bitmap)
-            if (params.useCache)
-                fileCache.cacheImg(bitmap, getCacheFileName())
+                if (params.useCache) {
+                    memoryCache.cacheImg(bitmap, getCacheFileName())
+                    fileCache.cacheImg(bitmap, getCacheFileName())
+                }
+            }
             inputStream.close()
         } else {
             Log.e("NetImageView", "server error")

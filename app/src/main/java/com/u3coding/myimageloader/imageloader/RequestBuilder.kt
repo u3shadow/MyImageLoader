@@ -4,7 +4,7 @@ import android.content.Context
 import android.widget.ImageView
 
 
-class RequestBuilder {
+object RequestBuilder {
     data class ImageParams(
          var roundPx: Float = 0f,
          val emptyPlaceHolderId: Int = -1,
@@ -13,8 +13,10 @@ class RequestBuilder {
          var imageMaxSideSize: Float = -1f,
          var useCache: Boolean = true,
          var context: Context? = null)
-     private var params = ImageParams()
+    private lateinit var params:ImageParams
+    private val memoryCache = MemoryLRUCache()
     fun withContext(context: Context): RequestBuilder {
+        params = ImageParams()
         params.context = context
         return this
     }
@@ -38,7 +40,7 @@ class RequestBuilder {
         return this
     }
     fun into(imageView: ImageView) {
-        val realLoader = RealImageLoader(params)
+        val realLoader = RealImageLoader(params, memoryCache)
         realLoader.loadImage(imageView)
     }
     fun adjustImageScale(imageMaxSideSize:Float): RequestBuilder {
