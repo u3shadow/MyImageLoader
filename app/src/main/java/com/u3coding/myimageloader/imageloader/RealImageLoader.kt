@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.util.Log
 import android.widget.ImageView
+import com.u3coding.myimageloader.imageloader.BitmapCompressor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,8 +15,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 
-class RealImageLoader(private val params: RequestBuilder.ImageParams,private val memoryCache:ImageCache) {
-    private var fileCache = FileImageCache(params.context!!)
+class RealImageLoader(
+    private val params: RequestBuilder.ImageParams,
+    private val memoryCache: ImageCache,
+    private val fileCache: ImageCache
+) {
     private var bitmapCompressor = BitmapCompressor(params.context!!)
 
     fun loadImage(imageView: ImageView) {
@@ -29,22 +33,26 @@ class RealImageLoader(private val params: RequestBuilder.ImageParams,private val
             try {
                 if (params.useCache) {
                     bitmap = memoryCache.getCacheImage(getCacheFileName())
-                    if (bitmap == null)
-                    bitmap = fileCache.getCacheImage(getCacheFileName())
+                    if (bitmap == null) {
+                        bitmap = fileCache.getCacheImage(getCacheFileName())
+                        if (bitmap != null) {
+                            memoryCache.cacheImg(bitmap, getCacheFileName())
+                        }
+                    }
                 }
                 if (bitmap == null) {
                     bitmap = getNetImg(imageView)
                 }
-                if (bitmap != null)
+                if (bitmap != null) {
                     bitmap = roundBitmap(bitmap)
+                }
             } catch (e: IOException) {
                 e.printStackTrace()
                 Log.e("NetImageView", "Load image error")
             }
             withContext(Dispatchers.Main) {
                 if (bitmap != null) {
-                   imageView.setImageBitmap(bitmap)
-                   memoryCache.cacheImg(bitmap,getCacheFileName())
+                    imageView.setImageBitmap(bitmap)
                 }
             }
         }

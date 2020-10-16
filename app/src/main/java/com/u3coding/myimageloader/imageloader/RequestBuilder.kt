@@ -15,9 +15,11 @@ object RequestBuilder {
          var context: Context? = null)
     private lateinit var params:ImageParams
     private val memoryCache = MemoryLRUCache()
+    private val fileCache = FileImageCache()
     fun withContext(context: Context): RequestBuilder {
         params = ImageParams()
         params.context = context
+        fileCache.context = context
         return this
     }
 
@@ -40,7 +42,7 @@ object RequestBuilder {
         return this
     }
     fun into(imageView: ImageView) {
-        val realLoader = RealImageLoader(params, memoryCache)
+        val realLoader = RealImageLoader(params, memoryCache,fileCache)
         realLoader.loadImage(imageView)
     }
     fun adjustImageScale(imageMaxSideSize:Float): RequestBuilder {
